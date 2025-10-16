@@ -1,5 +1,8 @@
 const express = require('express');
-const booksRoute = require('./modules/books/routes/booksRoute');
+const booksRoutes = require('./modules/books/books-routes');
+const usersRoutes = require('./modules/users/users-routes');
+const notFound = require('./modules/shared/middlewares/notFound');
+const errorHandler = require('./modules/shared/middlewares/errorHandler');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -9,31 +12,34 @@ app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/books', booksRoute);
+app.use('/books', booksRoutes);
+app.use('/users', usersRoutes);
+
+// Health check route
+app.get('/', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'Book Management System API is running!',
+    endpoints: {
+      books: '/books',
+      users: '/users'
+    }
+  });
+});
 
 // 404 Not Found handler
-app.use('*', (req, res) => {
-  res.status(404).json({
-    success: false,
-    error: 'Route not found'
-  });
-});
+app.use(notFound);
 
 // Error-handling middleware
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({
-    success: false,
-    error: 'Internal server error'
-  });
-});
+app.use(errorHandler);
 
 // Start server
 app.listen(PORT, () => {
   console.log(`Server is running on port ${PORT}`);
-  console.log(`API endpoints available at http://localhost:${PORT}/books`);
-  
+  console.log(`API endpoints available at:`);
+  console.log(`  http://localhost:${PORT}/`);
+  console.log(`  http://localhost:${PORT}/books`);
+  console.log(`  http://localhost:${PORT}/users`);
 });
 
 module.exports = app;
-

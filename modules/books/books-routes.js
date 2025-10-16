@@ -1,7 +1,7 @@
 const express = require('express');
 const router = express.Router();
-const booksModel = require('../models/booksModel');
-const { validateBook, handleValidationErrors } = require('../middlewares/booksValidation');
+const booksModel = require('./books-model');
+const { validateBook, handleValidationErrors } = require('./middlewares/booksValidation');
 
 // GET /books - Get all books
 router.get('/', (req, res) => {
