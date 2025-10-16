@@ -1,0 +1,47 @@
+[
+  {
+    "id": 1,
+    "title": "To Kill a Mockingbird",
+    "author": "Harper Lee",
+    "genre": "Fiction",
+    "publicationYear": 1960,
+    "averageRating": 4.27,
+    "pages": 281
+  },
+  {
+    "id": 2,
+    "title": "1984",
+    "author": "George Orwell",
+    "genre": "Dystopian",
+    "publicationYear": 1949,
+    "averageRating": 4.17,
+    "pages": 328
+  },
+  {
+    "id": 3,
+    "title": "Pride and Prejudice",
+    "author": "Jane Austen",
+    "genre": "Romance",
+    "publicationYear": 1813,
+    "averageRating": 4.25,
+    "pages": 432
+  },
+  {
+    "id": 4,
+    "title": "The Great Gatsby",
+    "author": "F. Scott Fitzgerald",
+    "genre": "Classic",
+    "publicationYear": 1925,
+    "averageRating": 3.91,
+    "pages": 180
+  },
+  {
+    "id": 5,
+    "title": "Harry Potter and the Philosopher's Stone",
+    "author": "J.K. Rowling",
+    "genre": "Fantasy",
+    "publicationYear": 1997,
+    "averageRating": 4.47,
+    "pages": 320
+  }
+]
