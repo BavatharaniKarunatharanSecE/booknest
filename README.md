@@ -1,32 +1,5 @@
 # Online Book Management System - Phase 2
 
-## Project Structure
-
-booknest/
-├── data/
-│ ├── books.json
-│ └── users.json
-├── modules/
-│ ├── books/
-│ │ ├── middlewares/
-│ │ │ └── booksValidation.js
-│ │ ├── books-model.js
-│ │ └── books-routes.js
-│ ├── users/
-│ │ ├── middlewares/
-│ │ │ └── usersValidation.js
-│ │ ├── users-model.js
-│ │ └── users-routes.js
-│ └── shared/
-│ ├── middlewares/
-│ │ ├── errorHandler.js
-│ │ └── notFound.js
-│ └── utils/
-│ └── dataHelpers.js
-├── server.js
-├── package.json
-└── README.md
-
 ## API Endpoints
 
 ### Books
