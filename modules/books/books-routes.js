@@ -1,6 +1,6 @@
 const express = require('express');
 const router = express.Router();
-const bookModel = require('./books-model');
+const bookBusiness = require('./books-business');
 const { validateBook } = require('./middlewares/booksValidation');
 
 // GET /books - Get all books with filtering, search, pagination
@@ -22,7 +22,7 @@ router.get('/', async (req, res) => {
     if (author) filters.author = author;
     if (minRating) filters.minRating = minRating;
 
-    const result = await bookModel.getAllBooks(filters, page, limit, sortBy);
+    const result = await bookBusiness.getAllBooks(filters, page, limit, sortBy);
     
     res.status(200).json({
       success: true,
@@ -42,7 +42,7 @@ router.get('/', async (req, res) => {
 // GET /books/:id - Get book by ID
 router.get('/:id', async (req, res) => {
   try {
-    const book = await bookModel.getBookByID(req.params.id);
+    const book = await bookBusiness.getBookByID(req.params.id);
     
     if (!book) {
       return res.status(404).json({
@@ -56,7 +56,7 @@ router.get('/:id', async (req, res) => {
       data: book
     });
   } catch (error) {
-    if (error.message.includes('Invalid book ID format')) {
+    if (error.message.includes('Cast to ObjectId failed')) {
       return res.status(400).json({
         success: false,
         message: 'Invalid book ID format'
@@ -74,7 +74,7 @@ router.get('/:id', async (req, res) => {
 // POST /books - Create new book
 router.post('/', validateBook, async (req, res) => {
   try {
-    const newBook = await bookModel.addNewBook(req.body);
+    const newBook = await bookBusiness.addNewBook(req.body);
     
     res.status(201).json({
       success: true,
@@ -82,13 +82,6 @@ router.post('/', validateBook, async (req, res) => {
       data: newBook
     });
   } catch (error) {
-    if (error.message.includes('already exists')) {
-      return res.status(409).json({
-        success: false,
-        message: error.message
-      });
-    }
-    
     res.status(500).json({
       success: false,
       message: 'Server error while creating book',
@@ -100,7 +93,7 @@ router.post('/', validateBook, async (req, res) => {
 // PUT /books/:id - Update book
 router.put('/:id', validateBook, async (req, res) => {
   try {
-    const updatedBook = await bookModel.updateExistingBook(req.params.id, req.body);
+    const updatedBook = await bookBusiness.updateExistingBook(req.params.id, req.body);
     
     res.status(200).json({
       success: true,
@@ -108,12 +101,6 @@ router.put('/:id', validateBook, async (req, res) => {
       data: updatedBook
     });
   } catch (error) {
-    if (error.message.includes('Invalid book ID format')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid book ID format'
-      });
-    }
     if (error.message.includes('Book not found')) {
       return res.status(404).json({
         success: false,
@@ -132,19 +119,13 @@ router.put('/:id', validateBook, async (req, res) => {
 // DELETE /books/:id - Delete book
 router.delete('/:id', async (req, res) => {
   try {
-    const result = await bookModel.deleteBook(req.params.id);
+    const result = await bookBusiness.deleteBook(req.params.id);
     
     res.status(200).json({
       success: true,
       message: result.message
     });
   } catch (error) {
-    if (error.message.includes('Invalid book ID format')) {
-      return res.status(400).json({
-        success: false,
-        message: 'Invalid book ID format'
-      });
-    }
     if (error.message.includes('Book not found')) {
       return res.status(404).json({
         success: false,

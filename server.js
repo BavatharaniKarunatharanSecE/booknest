@@ -1,14 +1,9 @@
 require('dotenv').config();
 const express = require('express');
-const connectDB = require('./config/database');
+const connectDB = require('./modules/shared/middlewares/connect-db');
 
 // Import routes
 const bookRoutes = require('./modules/books/books-routes');
-// const userRoutes = require('./modules/users/users-routes'); // Uncomment when ready
-
-// Import middlewares
-const errorHandler = require('./modules/shared/middlewares/errorHandler');
-const notFound = require('./modules/shared/middlewares/notFound');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -16,45 +11,45 @@ const PORT = process.env.PORT || 3000;
 // Connect to MongoDB
 connectDB();
 
-// Middleware
+// Application-level middlewares
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
 app.use('/books', bookRoutes);
-// app.use('/users', userRoutes); // Uncomment when ready
 
-// Health check route
-app.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'BookNest API is running',
-    timestamp: new Date().toISOString(),
-    environment: process.env.NODE_ENV
-  });
-});
-
-// Root route
+// Root route - simple welcome message
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Welcome to BookNest API',
+    message: 'Welcome to BookNest',
     version: '1.0.0',
     endpoints: {
-      books: '/books',
-      health: '/health'
+      books: '/books'
     }
   });
 });
 
 // 404 Handler
-app.use(notFound);
+app.use('*', (req, res) => {
+  res.status(404).json({
+    success: false,
+    message: 'Route not found'
+  });
+});
 
 // Error Handler
-app.use(errorHandler);
+app.use((error, req, res, next) => {
+  console.error('Error:', error);
+  res.status(500).json({
+    success: false,
+    message: 'Internal server error'
+  });
+});
 
 app.listen(PORT, () => {
   console.log(`🚀 Server running on port ${PORT}`);
   console.log(`📚 BookNest API: http://localhost:${PORT}`);
-  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
 });
+
+module.exports = app;

@@ -1,143 +1,92 @@
-const path = require('path');
-const { readDataFromFile, writeDataToFile, generateNewId } = require('../shared/utils/dataHelpers');
+const mongoose = require('mongoose');
+const bcrypt = require('bcryptjs');
 
-const usersFilePath = path.join(__dirname, '../../data/users.json');
+// User Schema for authentication (from Phase 1)
+const userSchema = new mongoose.Schema({
+  username: {
+    type: String,
+    required: [true, 'Username is required'],
+    unique: true,
+    trim: true,
+    minlength: [3, 'Username must be at least 3 characters'],
+    maxlength: [30, 'Username cannot exceed 30 characters']
+  },
+  email: {
+    type: String,
+    required: [true, 'Email is required'],
+    unique: true,
+    trim: true,
+    lowercase: true,
+    match: [/^\w+([.-]?\w+)*@\w+([.-]?\w+)*(\.\w{2,3})+$/, 'Please enter a valid email']
+  },
+  password: {
+    type: String,
+    required: [true, 'Password is required'],
+    minlength: [6, 'Password must be at least 6 characters']
+  },
+  firstName: {
+    type: String,
+    required: [true, 'First name is required'],
+    trim: true,
+    maxlength: [50, 'First name cannot exceed 50 characters']
+  },
+  lastName: {
+    type: String,
+    required: [true, 'Last name is required'],
+    trim: true,
+    maxlength: [50, 'Last name cannot exceed 50 characters']
+  },
+  role: {
+    type: String,
+    enum: ['user', 'admin'],
+    default: 'user'
+  },
+  favoriteBooks: [{
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Book'
+  }],
+  isActive: {
+    type: Boolean,
+    default: true
+  }
+}, {
+  timestamps: true
+});
 
-// Get all users
-const getAllUsers = () => {
-  return readDataFromFile(usersFilePath);
-};
+// Indexes
+userSchema.index({ email: 1 });
+userSchema.index({ username: 1 });
 
-// Get user by ID
-const getUserByID = (id) => {
-  const users = readDataFromFile(usersFilePath);
-  return users.find(user => user.id === parseInt(id));
-};
-
-// Get user by username
-const getUserByUsername = (username) => {
-  const users = readDataFromFile(usersFilePath);
-  return users.find(user => user.username === username);
-};
-
-// Get user by email
-const getUserByEmail = (email) => {
-  const users = readDataFromFile(usersFilePath);
-  return users.find(user => user.email === email);
-};
-
-// Add new user
-const addNewUser = (userData) => {
-  const users = readDataFromFile(usersFilePath);
-  const newId = generateNewId(users);
+// Hash password before saving
+userSchema.pre('save', async function(next) {
+  if (!this.isModified('password')) return next();
   
-  const newUser = {
-    id: newId,
-    joinedDate: new Date().toISOString().split('T')[0],
-    ...userData
+  try {
+    const salt = await bcrypt.genSalt(12);
+    this.password = await bcrypt.hash(this.password, salt);
+    next();
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Compare password method
+userSchema.methods.comparePassword = async function(candidatePassword) {
+  return await bcrypt.compare(candidatePassword, this.password);
+};
+
+// Instance method to get user profile (without password)
+userSchema.methods.getProfile = function() {
+  return {
+    id: this._id,
+    username: this.username,
+    email: this.email,
+    firstName: this.firstName,
+    lastName: this.lastName,
+    role: this.role,
+    isActive: this.isActive,
+    createdAt: this.createdAt
   };
-  
-  users.push(newUser);
-  
-  if (writeDataToFile(usersFilePath, users)) {
-    return newUser;
-  }
-  return null;
 };
 
-// Update existing user
-const updateExistingUser = (id, userData) => {
-  const users = readDataFromFile(usersFilePath);
-  const userIndex = users.findIndex(user => user.id === parseInt(id));
-  
-  if (userIndex === -1) {
-    return null;
-  }
-  
-  const updatedUser = {
-    ...users[userIndex],
-    ...userData,
-    id: parseInt(id),
-    joinedDate: users[userIndex].joinedDate
-  };
-  
-  users[userIndex] = updatedUser;
-  
-  if (writeDataToFile(usersFilePath, users)) {
-    return updatedUser;
-  }
-  return null;
-};
-
-// Delete user
-const deleteUser = (id) => {
-  const users = readDataFromFile(usersFilePath);
-  const userIndex = users.findIndex(user => user.id === parseInt(id));
-  
-  if (userIndex === -1) {
-    return false;
-  }
-  
-  users.splice(userIndex, 1);
-  return writeDataToFile(usersFilePath, users);
-};
-
-// Add book to user's favorites
-const addFavoriteBook = (userId, bookId) => {
-  const users = readDataFromFile(usersFilePath);
-  const userIndex = users.findIndex(user => user.id === parseInt(userId));
-  
-  if (userIndex === -1) {
-    return null;
-  }
-  
-  const user = users[userIndex];
-  const bookIdNum = parseInt(bookId);
-  
-  if (!user.favoriteBooks) {
-    user.favoriteBooks = [];
-  }
-  
-  if (!user.favoriteBooks.includes(bookIdNum)) {
-    user.favoriteBooks.push(bookIdNum);
-  }
-  
-  if (writeDataToFile(usersFilePath, users)) {
-    return user;
-  }
-  return null;
-};
-
-// Remove book from user's favorites
-const removeFavoriteBook = (userId, bookId) => {
-  const users = readDataFromFile(usersFilePath);
-  const userIndex = users.findIndex(user => user.id === parseInt(userId));
-  
-  if (userIndex === -1) {
-    return null;
-  }
-  
-  const user = users[userIndex];
-  const bookIdNum = parseInt(bookId);
-  
-  if (user.favoriteBooks && user.favoriteBooks.includes(bookIdNum)) {
-    user.favoriteBooks = user.favoriteBooks.filter(id => id !== bookIdNum);
-  }
-  
-  if (writeDataToFile(usersFilePath, users)) {
-    return user;
-  }
-  return null;
-};
-
-module.exports = {
-  getAllUsers,
-  getUserByID,
-  getUserByUsername,
-  getUserByEmail,
-  addNewUser,
-  updateExistingUser,
-  deleteUser,
-  addFavoriteBook,
-  removeFavoriteBook
-};
+module.exports = mongoose.model('User', userSchema);
