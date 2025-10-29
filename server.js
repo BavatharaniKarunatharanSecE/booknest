@@ -1,45 +1,60 @@
+require('dotenv').config();
 const express = require('express');
-const booksRoutes = require('./modules/books/books-routes');
-const usersRoutes = require('./modules/users/users-routes');
-const notFound = require('./modules/shared/middlewares/notFound');
+const connectDB = require('./config/database');
+
+// Import routes
+const bookRoutes = require('./modules/books/books-routes');
+// const userRoutes = require('./modules/users/users-routes'); // Uncomment when ready
+
+// Import middlewares
 const errorHandler = require('./modules/shared/middlewares/errorHandler');
+const notFound = require('./modules/shared/middlewares/notFound');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Application-level middlewares
+// Connect to MongoDB
+connectDB();
+
+// Middleware
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
 // Routes
-app.use('/books', booksRoutes);
-app.use('/users', usersRoutes);
+app.use('/books', bookRoutes);
+// app.use('/users', userRoutes); // Uncomment when ready
 
 // Health check route
+app.get('/health', (req, res) => {
+  res.status(200).json({
+    success: true,
+    message: 'BookNest API is running',
+    timestamp: new Date().toISOString(),
+    environment: process.env.NODE_ENV
+  });
+});
+
+// Root route
 app.get('/', (req, res) => {
   res.status(200).json({
     success: true,
-    message: 'Book Management System API is running!',
+    message: 'Welcome to BookNest API',
+    version: '1.0.0',
     endpoints: {
       books: '/books',
-      users: '/users'
+      health: '/health'
     }
   });
 });
 
-// 404 Not Found handler
+// 404 Handler
 app.use(notFound);
 
-// Error-handling middleware
+// Error Handler
 app.use(errorHandler);
 
-// Start server
 app.listen(PORT, () => {
-  console.log(`Server is running on port ${PORT}`);
-  console.log(`API endpoints available at:`);
-  console.log(`  http://localhost:${PORT}/`);
-  console.log(`  http://localhost:${PORT}/books`);
-  console.log(`  http://localhost:${PORT}/users`);
+  console.log(`🚀 Server running on port ${PORT}`);
+  console.log(`📚 BookNest API: http://localhost:${PORT}`);
+  console.log(`🔍 Health check: http://localhost:${PORT}/health`);
 });
-
-module.exports = app;
