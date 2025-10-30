@@ -1,7 +1,7 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// User Schema for authentication (from Phase 1)
+// User Schema for authentication 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
