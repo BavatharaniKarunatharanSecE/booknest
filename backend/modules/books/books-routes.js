@@ -2,6 +2,7 @@ const express = require('express');
 const router = express.Router();
 const bookBusiness = require('./books-business');
 const { validateBook } = require('./middlewares/booksValidation');
+const { authenticate, authorize, optionalAuth } = require('../../shared/middlewares/auth');
 
 // GET /books - Get all books with filtering, search, pagination
 router.get('/', async (req, res) => {

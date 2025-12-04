@@ -35,6 +35,15 @@ const bookSchema = new mongoose.Schema({
     type: Number,
     required: [true, 'Number of pages is required'],
     min: [1, 'Book must have at least 1 page']
+  },
+  description: {
+    type: String,
+    maxlength: [1000, 'Description cannot exceed 1000 characters']
+  },
+  createdBy: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'User',
+    required: true
   }
 }, {
   timestamps: true

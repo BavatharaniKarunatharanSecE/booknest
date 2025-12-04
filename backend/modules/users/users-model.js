@@ -1,7 +1,6 @@
 const mongoose = require('mongoose');
 const bcrypt = require('bcryptjs');
 
-// User Schema for authentication 
 const userSchema = new mongoose.Schema({
   username: {
     type: String,
@@ -24,27 +23,22 @@ const userSchema = new mongoose.Schema({
     required: [true, 'Password is required'],
     minlength: [6, 'Password must be at least 6 characters']
   },
-  firstName: {
-    type: String,
-    required: [true, 'First name is required'],
-    trim: true,
-    maxlength: [50, 'First name cannot exceed 50 characters']
-  },
-  lastName: {
-    type: String,
-    required: [true, 'Last name is required'],
-    trim: true,
-    maxlength: [50, 'Last name cannot exceed 50 characters']
-  },
   role: {
     type: String,
-    enum: ['user', 'admin'],
+    enum: ['admin', 'user'],
     default: 'user'
   },
-  favoriteBooks: [{
-    type: mongoose.Schema.Types.ObjectId,
-    ref: 'Book'
-  }],
+  isVerified: {
+    type: Boolean,
+    default: false
+  },
+  otp: {
+    code: String,
+    expiresAt: Date
+  },
+  lastLogin: {
+    type: Date
+  },
   isActive: {
     type: Boolean,
     default: true
@@ -52,10 +46,6 @@ const userSchema = new mongoose.Schema({
 }, {
   timestamps: true
 });
-
-// Indexes
-userSchema.index({ email: 1 });
-userSchema.index({ username: 1 });
 
 // Hash password before saving
 userSchema.pre('save', async function(next) {
@@ -75,17 +65,48 @@ userSchema.methods.comparePassword = async function(candidatePassword) {
   return await bcrypt.compare(candidatePassword, this.password);
 };
 
-// Instance method to get user profile (without password)
+// Method to generate OTP
+userSchema.methods.generateOTP = function() {
+  const otp = Math.floor(100000 + Math.random() * 900000).toString();
+  const expiresAt = new Date(Date.now() + 10 * 60 * 1000); // 10 minutes
+  
+  this.otp = {
+    code: otp,
+    expiresAt: expiresAt
+  };
+  
+  return otp;
+};
+
+// Method to verify OTP
+userSchema.methods.verifyOTP = function(otpCode) {
+  if (!this.otp || !this.otp.code || !this.otp.expiresAt) {
+    return false;
+  }
+  
+  if (this.otp.expiresAt < new Date()) {
+    return false; // OTP expired
+  }
+  
+  return this.otp.code === otpCode;
+};
+
+// Method to clear OTP after use
+userSchema.methods.clearOTP = function() {
+  this.otp = undefined;
+};
+
+// Method to get user profile (without sensitive data)
 userSchema.methods.getProfile = function() {
   return {
     id: this._id,
     username: this.username,
     email: this.email,
-    firstName: this.firstName,
-    lastName: this.lastName,
     role: this.role,
+    isVerified: this.isVerified,
     isActive: this.isActive,
-    createdAt: this.createdAt
+    createdAt: this.createdAt,
+    lastLogin: this.lastLogin
   };
 };
 
