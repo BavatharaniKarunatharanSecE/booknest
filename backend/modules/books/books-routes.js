@@ -5,7 +5,7 @@ const { validateBook } = require('./middlewares/booksValidation');
 const { authenticate, authorize, optionalAuth } = require('../../shared/middlewares/auth');
 
 // GET /books - Get all books with filtering, search, pagination
-router.get('/', async (req, res) => {
+router.get('/', optionalAuth, async (req, res) => {
   try {
     const {
       search,
@@ -41,7 +41,7 @@ router.get('/', async (req, res) => {
 });
 
 // GET /books/:id - Get book by ID
-router.get('/:id', async (req, res) => {
+router.get('/:id', optionalAuth, async (req, res) => {
   try {
     const book = await bookBusiness.getBookByID(req.params.id);
     
@@ -73,9 +73,15 @@ router.get('/:id', async (req, res) => {
 });
 
 // POST /books - Create new book
-router.post('/', validateBook, async (req, res) => {
+router.post('/', authenticate, validateBook, async (req, res) => {
   try {
-    const newBook = await bookBusiness.addNewBook(req.body);
+    // Add user ID to book data
+    const bookData = {
+      ...req.body,
+      createdBy: req.user.id
+    };
+    
+    const newBook = await bookBusiness.addNewBook(bookData);
     
     res.status(201).json({
       success: true,
@@ -92,8 +98,25 @@ router.post('/', validateBook, async (req, res) => {
 });
 
 // PUT /books/:id - Update book
-router.put('/:id', validateBook, async (req, res) => {
+router.put('/:id', authenticate, validateBook, async (req, res) => {
   try {
+    // Users can only update their own books unless they're admin
+    const book = await bookBusiness.getBookByID(req.params.id);
+    
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: 'Book not found'
+      });
+    }
+    
+    if (req.user.role !== 'admin' && book.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only update your own books'
+      });
+    }
+    
     const updatedBook = await bookBusiness.updateExistingBook(req.params.id, req.body);
     
     res.status(200).json({
@@ -118,8 +141,25 @@ router.put('/:id', validateBook, async (req, res) => {
 });
 
 // DELETE /books/:id - Delete book
-router.delete('/:id', async (req, res) => {
+router.delete('/:id', authenticate, async (req, res) => {
   try {
+    // Users can only delete their own books unless they're admin
+    const book = await bookBusiness.getBookByID(req.params.id);
+    
+    if (!book) {
+      return res.status(404).json({
+        success: false,
+        message: 'Book not found'
+      });
+    }
+    
+    if (req.user.role !== 'admin' && book.createdBy.toString() !== req.user.id) {
+      return res.status(403).json({
+        success: false,
+        message: 'You can only delete your own books'
+      });
+    }
+    
     const result = await bookBusiness.deleteBook(req.params.id);
     
     res.status(200).json({
@@ -137,6 +177,24 @@ router.delete('/:id', async (req, res) => {
     res.status(500).json({
       success: false,
       message: 'Server error while deleting book',
+      error: error.message
+    });
+  }
+});
+
+// Admin only route for statistics
+router.get('/stats/admin', authenticate, authorize('admin'), async (req, res) => {
+  try {
+    // Implement admin-only statistics here
+    res.status(200).json({
+      success: true,
+      message: 'Admin statistics',
+      data: {}
+    });
+  } catch (error) {
+    res.status(500).json({
+      success: false,
+      message: 'Server error',
       error: error.message
     });
   }
