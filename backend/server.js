@@ -2,7 +2,9 @@ require('dotenv').config();
 const express = require('express');
 const connectDB = require('./modules/shared/middlewares/connect-db');
 const bookRoutes = require('./modules/books/books-routes');
-const cors = require('cors'); // Add this line
+const cors = require('cors'); 
+const userRoutes = require('./modules/users/users-routes');
+
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -12,6 +14,8 @@ connectDB();
 
 // CORS middleware - Allow React frontend to connect
 app.use(cors());
+
+app.use('/users', userRoutes);
 
 // Application-level middlewares
 app.use(express.json());

@@ -1,4 +1,4 @@
-const API_BASE_URL = 'http://localhost:3001';
+const API_BASE_URL = 'http://localhost:3000/api';
 
 // Helper function for API calls
 const apiRequest = async (endpoint, options = {}) => {
@@ -10,6 +10,11 @@ const apiRequest = async (endpoint, options = {}) => {
     },
     ...options,
   };
+
+  const token = localStorage.getItem('token');
+  if (token) {
+    config.headers['Authorization'] = `Bearer ${token}`;
+  }
 
   if (config.body) {
     config.body = JSON.stringify(config.body);
@@ -64,5 +69,43 @@ export const bookAPI = {
     });
   },
 };
+export const authAPI = {
+  register: (userData) => {
+    return apiRequest('/users/register', {
+      method: 'POST',
+      body: userData
+    });
+  },
 
-export default bookAPI;
+  login: (email, password) => {
+    return apiRequest('/users/login', {
+      method: 'POST',
+      body: { email, password }
+    });
+  },
+
+  verifyOTP: (userId, otp) => {
+    return apiRequest('/users/verify-otp', {
+      method: 'POST',
+      body: { userId, otp }
+    });
+  },
+
+  getProfile: () => {
+    return apiRequest('/users/profile');
+  },
+
+  refreshToken: (refreshToken) => {
+    return apiRequest('/users/refresh-token', {
+      method: 'POST',
+      body: { refreshToken }
+    });
+  },
+
+  logout: () => {
+    return apiRequest('/users/logout', {
+      method: 'POST'
+    });
+  }
+};
+export default {bookAPI, authAPI};

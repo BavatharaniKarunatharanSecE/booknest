@@ -9,7 +9,7 @@
   },
   "repository": {
     "type": "git",
-    "url": "https://github.com/BavatharaniKarunatharanSecE/booknest"
+    "url": "git+https://github.com/BavatharaniKarunatharanSecE/booknest.git"
   },
   "keywords": [
     "books",
@@ -25,13 +25,18 @@
     "bcryptjs": "^3.0.3",
     "cors": "^2.8.5",
     "dotenv": "^17.2.3",
-    "express": "^4.18.2",
-    "express-validator": "^7.0.1",
+    "express": "^4.22.1",
+    "express-validator": "^7.3.1",
     "jsonwebtoken": "^9.0.3",
-    "mongoose": "^8.19.2",
+    "mongoose": "^8.20.2",
     "nodemailer": "^7.0.11"
   },
   "devDependencies": {
     "nodemon": "^3.0.1"
-  }
+  },
+  "type": "commonjs",
+  "bugs": {
+    "url": "https://github.com/BavatharaniKarunatharanSecE/booknest/issues"
+  },
+  "homepage": "https://github.com/BavatharaniKarunatharanSecE/booknest#readme"
 }

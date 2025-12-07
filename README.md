@@ -69,6 +69,7 @@ BookNest is a comprehensive Online Book Management System built with Node.js, Ex
 - ✅ **RESTful API** - Clean, standardized endpoints
 
 ## Phase 4: Frontend Integration with React ✅
+
 📋 Project Overview
 BookNest is a comprehensive full-stack web application for managing book collections. This Phase 4 implementation features a complete React.js frontend integrated with the existing Express.js + MongoDB backend.
 
@@ -108,3 +109,22 @@ Create - Add new books through intuitive forms
 Read - View all books with pagination
 Update - Edit book details with pre-filled forms
 Delete - Remove books with confirmation dialogs
+
+🎯 Phase 5 Features Implemented
+✅ Backend Authentication System
+JWT-based Authentication: Token-based authentication with access tokens
+Email-based MFA: OTP verification sent to user's email
+Role-Based Access Control (RBAC): Admin and user roles with middleware
+Secure Password Storage: bcrypt hashing with salt rounds
+Protected API Routes: Authentication middleware for sensitive endpoints
+
+✅ Frontend Authentication Flow
+Login Page: Email/password authentication with OTP flow
+OTP Verification: 6-digit code input with resend capability
+Registration Page: New user signup with validation
+Protected Routes: Authentication-required pages
+Dynamic Navigation: UI changes based on authentication state
+
+✅ User Roles Implemented
+Admin: Full access to all books and user management
+User: Can only manage their own books
